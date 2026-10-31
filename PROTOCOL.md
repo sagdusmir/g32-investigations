@@ -74,6 +74,25 @@ Access: **N** = subscribe/notify, **R** = read, **W** = write-with-response.
 | resetWifi | `830e02f5-…` | W | 1 byte `0x02` (triggers WiFi reprovisioning) |
 | pop | `830e02f6-…` | R | UTF-8 onboarding/proof-of-possession key |
 
+### Grill mode — direct / indirect burners
+
+Characteristic `830e02f7` (service `830e02f4-…`). Write a single uint8; also readable.
+
+The G32 has **4 gas zones** (burners 1–4, left→right). `grill_mode` selects how they are
+configured for direct vs. indirect grilling.:
+
+| Value | Mode | Burners lit (direct) | Indirect zone | App label |
+|---|---|---|---|---|
+| `0` | Direct | Each zone chosen individually (`directZoneStates`) | — | Direct mode |
+| `1` | Indirect setup 1 | Zone 1 | Zones 2+3+4 | Indirect setup 1 |
+| `2` | Indirect setup 2 | Zones 1 and 4 (outer) | Zones 2+3 (middle) | Indirect setup 2 |
+| `3` | Indirect setup 3 | Zone 4 | Zones 1+2+3 | Indirect setup 3 |
+
+In **direct** mode the app lets you toggle every zone independently. The three **indirect**
+setups are fixed templates: the listed zone(s) stay lit as the heat source, and the food sits
+over the unlit zone(s). Wire/model names in the app: `direct`, `indirect1`, `indirect2`,
+`indirect3`.
+
 ### OTA — service `64cd0d4e-2f66-4e6f-b1af-fac03a604018`
 `otaControl` `64cd0d41-…` (1-byte control codes), `otaData` `64cd0d42-…` (chunked image), and a third
 char `64cd0d43-…` (R, reads `0x01` on fw 1.0.5; **undocumented**, likely an OTA status/ready flag).
@@ -145,6 +164,7 @@ All write-with-response. Weight is encoded as `[grams >> 8, grams & 0xFF]` (uint
 The gas **percentage** is computed on the grill from these calibration values (stored in NVS as
 `WEIGHT`, `TAREWGT`, `FULLWGT`, `GASBDNWGT`, `CRIT_PRCT`); for a local client you only need the four
 characteristics above to configure it — no cloud login required.
+
 
 ---
 
